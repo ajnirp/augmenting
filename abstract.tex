@@ -1,0 +1,61 @@
+% \documentclass[a4paper,9pt,twocolumn]{article}
+\documentclass[a4paper,9pt]{article}
+
+\renewcommand*{\familydefault}{\sfdefault}
+% \renewcommand*{\familydefault}{uncl}
+% \renewcommand*{\familydefault}{\rmdefault}
+% \renewcommand*{\familydefault}{\ttdefault}
+
+\setlength{\columnsep}{36pt}
+
+
+\usepackage[dvips]{graphicx}
+% \usepackage[cm]{fullpage} % very narrow margins
+\usepackage{fullpage} % narrow margins
+
+% \usepackage[hidelinks]{hyperref} % clickable links and citations with no green borders
+\usepackage[backref]{hyperref} % clickable links and citations
+
+\title{CS775 Paper Abstract : Augmenting Hand Animation with Three-dimensional Secondary Motion}
+\author{Mayank Dehgal (110050024), Rohan Prinja (110050011)}
+
+\date{\today}
+\begin{document}
+\maketitle
+
+\section{Introduction}
+The paper~\cite{Aug10} presents a method to improve the realism of hand-drawn 2D animation with 3D secondary motion. Specifically, the technique presented allows us to extract a 3D description (using collision volumes) of a hand-drawn character, then add physically based simulations that interact with this description.
+
+The problem this solves is interesting because to add realism traditionally an animator draws in extra elements for each frame, which is time consuming. By back-projecting a 2D hand-drawn frame into 3D and physically simulating the scene elements interacting with it we can achieve a greater level of realism with less human effort.
+
+\section{Problem Scope}
+To start with we have a series of frames making up a hand-drawn animation of a human character. Our aim is to add secondary motion to an animation of a hand-drawn character. Secondary motion is defined as the motion of objects in the environment in response to actions of the character. We do this by physically simulating interaction of some scene elements with the character. These scene elements could be solid objects in the world, cloth, clothing, water, rain, and so on. The problem is to develop a method that does not require much user input and can be integrated well into the traditional animation pipeline.
+
+\section{Solution}
+The solution presented by the authors is in five phases. First the user identifies the joints on the character in each frame of the hand-drawn animation. Then we \textit{back-project} the hand-drawn animation into 3D. Then we physically \textit{simulate} the scene elements and their interaction with the character. Then we \textit{composite} the scene elements with the character. Finally we \textit{render} the entire scene description back to 2D.
+
+\subsection{Registration and Back-projection}
+
+There are two obstacles to unambiguous 3D reconstruction of a 2D image, \textbf{depth ambiguity} and \textbf{composite motion ambiguity}. Depth ambiguity is the ambiguity in the distance of each joint from the image plane. Composite motion ambiguity is the problem that the motion of the camera cannot be disambiguated from the motion of an object if only the 2D animation is given. We sidestep these problems by having a user select a similar motion capture from a large database. Now the problem is to find a projection matrix that minimzes the error between the projection of the mocap animation and the hand-drawn animation. We do this by minimizing the summed error over a window of K frames. After we obtain a projection matrix M we search for 3D points that will project exactly onto the points of the hand-drawn animation.
+
+\subsection{Physical Simulation of Scene Elements}
+
+Once we have the skeleton we create and physically simulate the scene elements. The skeleton is "filled-in" by using collision volumes (the authors use frustums) between each pair of adjacent markers.
+
+\subsection{Compositing}
+
+To take care of depth ordering, we make the depth and occlusion maps for both the hand-drawn frame and the rendered scene elements, then iterate over each unoccluded (in the hand-drawn frame) pixel and set its alpha value to zero if its depth in the hand-drawn frame is greater than the depth in the scene element frame. Otherwise we set it to the inverse of the grayscaled version of its color in the hand-drawn frame.
+
+\subsection{Rendering}
+
+Finally, the composited image is rendered back into two dimensions.
+
+\section{To Implement}
+
+We plan to implement the core feature of this paper, namely, registration and back-projection of a 2D hand-drawn animation into 3D. For this part we assume that we have access to motion captures that closely resemble the given hand-drawn animation. If time permits we will try to implement the next stage, namely, simple physical simulation and interaction of a scene element with the character. One possible idea for a scene element not used by the authors of this paper is to have leaves blowing in the wind, striking the character and brushing past him/her.
+
+\bibliography{mybib}{}
+\bibliographystyle{alpha}
+
+\end{document}
+

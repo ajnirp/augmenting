@@ -1,0 +1,55 @@
+Preliminary notes made 21 Mar on first reading
+----------------------------------------------
+
+secondary motion - motion of scene elements in response to the motion of the primary character
+use z-depth info from similar motion captures to resolve 2d-3d ambiguity
+create plausible collision volumes in 3d that interact with the desired physical simulation
+composite the rendered effects with the hand-drawn effects while maintaining relative depth ordering
+
+user input
+	annotate the joint locations with dots
+	select a similar mocap segment from a database
+
+problems in reconstructing 3d information
+	depth ambiguity
+	composite motion ambiguity - motion of camera cannot be disambiguated from motion of object if only image plane information is given
+		secondary motion (movement of ponytail / skirt) can disambiguate this
+
+user input
+	specify skeleton via N virtual markers, and bounding box for each limb (for each frame of input animation)
+	color codes the interior of the hand-drawn figure
+	selects a mocap segment that resembles the given animation (i.e. that has similar depth animation when seen from the same point of view)
+
+estimate a projection matrix that takes the mocap data to the 2d world
+	say the projection matrix is M
+	we have N user specified 2d virtual markers
+	we have N 3d mocap markers
+	take a window of K frames and try to minimze the error between MXi and xi
+
+after estimating M, find 3d points that will exactly project onto the 2d points
+
+fill in the space between the markers with tapered cylinders
+	the cylinders are chosen such that they project onto the bounding box for that limb
+	bounding boxes are either chosen manually by the user
+	or a simple algo is used to estimate the bounding box, and the user then corrects any mistakes
+
+place spherical joints at the markers themselves
+
+at this point, the frames are imported into maya scene files
+maya dynamics engine is used to simulate the motion of the scene objects and their interaction with the character
+then the scene elements are rendered with lighting and texture
+the depth map and occlusion map are also rendered
+
+compute depth map for the hand-drawn image by linearly interpolating known depths
+use the renderer to obtain the depth map for the rendered scene element
+
+depth ordering is incorporated as follows:
+	for each pixel
+		if its depth in the hand-drawn image >= depth in the rendered image
+			set its alpha to 0
+		else
+			calculate the grayscale version of its color
+			set alpha to 1 - (grayscale_color/255)
+
+	finally, render the image as:
+		alpha * (depth in hand-drawn image) + (1 - alpha) * (depth in rendered image)
